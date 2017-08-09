@@ -25,6 +25,9 @@ class BrowserViewController: UIViewController {
     fileprivate var scrollBarOffsetAlpha: CGFloat = 0
     fileprivate var scrollBarState: URLBarScrollState = .expanded
 
+    fileprivate let photoManager = PhotoManager()
+    fileprivate let urlCacheManager = URLCacheManeger()
+
     fileprivate enum URLBarScrollState {
         case collapsed
         case expanded
@@ -236,6 +239,17 @@ class BrowserViewController: UIViewController {
             self.browserToolbar.animateHidden(self.homeView != nil || self.showsToolsetInURLBar, duration: coordinator.transitionDuration)
         })
     }
+
+    fileprivate func presentImageActionSheet(title: String, saveAction: @escaping () -> Void, copyAction: @escaping () -> Void) {
+        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+
+        alertController.addAction(UIAlertAction(title: UIConstants.strings.saveImage, style: .default) { _ in saveAction() })
+        alertController.addAction(UIAlertAction(title: UIConstants.strings.copyImage, style: .default) { _ in copyAction() })
+        alertController.addAction(UIAlertAction(title: UIConstants.strings.cancel, style: .cancel))
+
+        present(alertController, animated: true, completion: nil)
+
+    }
 }
 
 extension BrowserViewController: URLBarDelegate {
@@ -333,50 +347,28 @@ extension BrowserViewController: BrowserToolsetDelegate {
 }
 
 extension BrowserViewController: BrowserDelegate {
-
-    func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
-        if let error = error {
-            // we got back an error!
-            let ac = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
-            present(ac, animated: true)
-        } else {
-            let ac = UIAlertController(title: "Saved!", message: "Your altered image has been saved to your photos.", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "OK", style: .default))
-            present(ac, animated: true)
-        }
-    }
-
     func browser(_ browser: Browser, didLongPressImage path: String) {
+        let downloadImage: (String) -> UIImage? = { path in
+            guard let url = URL(string: path),
+                let data = (try? Data(contentsOf: url)),
+                let image = UIImage(data: data) else { return nil }
 
-        let getImage: (String) -> UIImage? = { path in
-            guard let url = URL(string: path) else { return nil }
-            let request = URLRequest(url: url)
-            let response = URLCache.shared.cachedResponse(for: request)
-            guard let data = (response?.data ?? (try? Data(contentsOf: url))) else { return nil }
-
-            return UIImage(data: data)
+            return image
         }
 
-        let saveImage: (String) -> Void = { path in
-            guard let image = getImage(path) else { return }
-
-            UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.image(_:didFinishSavingWithError:contextInfo:)), nil)
+        let fetchImage: (String) -> UIImage? = { path in
+            let image = self.urlCacheManager.fetchImageFromCache(path: path) ?? downloadImage(path)
+            return image
         }
 
-        let vc = UIAlertController(title: path, message: nil, preferredStyle: .actionSheet)
-        vc.addAction(UIAlertAction(title: "Copy Link", style: .default) { _ in UIPasteboard.general.string = path })
-        vc.addAction(UIAlertAction(title: "Share Link", style: .default) { _ in self.share(url: path) })
-        vc.addAction(UIAlertAction(title: "Save Image", style: .default) { _ in saveImage(path) })
-        vc.addAction(UIAlertAction(title: "Copy Image", style: .default) { _ in UIPasteboard.general.image = getImage(path) })
-        vc.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        let saveAction = {
+            guard let image = fetchImage(path) else { return }
+            self.photoManager.save(image: image)
+        }
 
-        present(vc, animated: true, completion: nil)
-    }
+        let copyAction = { UIPasteboard.general.image = fetchImage(path) }
 
-    func share(url: String) {
-        let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        present(vc, animated: true)
+        presentImageActionSheet(title: path, saveAction: saveAction, copyAction: copyAction)
     }
 
     func browserDidStartNavigation(_ browser: Browser) {
