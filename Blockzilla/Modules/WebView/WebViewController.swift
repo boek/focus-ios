@@ -9,8 +9,18 @@
 import UIKit
 import WebKit
 
+protocol BrowserState {
+    var url: URL? { get }
+    var canGoBack: Bool { get }
+    var canGoForward: Bool { get }
+    var estimatedProgress: Double { get }
+}
+
 protocol WebController {
-    var delegate: WebControllerDelegate? { get set }
+    weak var delegate: WebControllerDelegate? { get set }
+    var canGoBack: Bool { get }
+    var canGoForward: Bool { get }
+
     func load(_ request: URLRequest)
 }
 
@@ -18,6 +28,7 @@ protocol WebControllerDelegate: class {
     func webController(_ controller: WebController, scrollViewWillBeginDragging scrollView: UIScrollView)
     func webController(_ controller: WebController, scrollViewDidEndDragging scrollView: UIScrollView)
     func webController(_ controller: WebController, scrollViewDidScroll scrollView: UIScrollView)
+    func webController(_ controller: WebController, stateDidChange state: BrowserState)
     func webControllerShouldScrollToTop(_ controller: WebController) -> Bool
 }
 
@@ -62,4 +73,11 @@ extension WebViewController: UIScrollViewDelegate {
 
 extension WebViewController: WKNavigationDelegate {
 
+}
+
+extension WebViewController: BrowserState {
+    var canGoBack: Bool { return browserView.canGoBack }
+    var canGoForward: Bool { return browserView.canGoForward }
+    var url: URL? { return browserView.url }
+    var estimatedProgress: Double { return browserView.estimatedProgress }
 }

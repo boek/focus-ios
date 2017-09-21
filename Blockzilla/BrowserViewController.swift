@@ -10,8 +10,6 @@ import Telemetry
 class BrowserViewController: UIViewController {
     private let webViewController = WebViewController()
 
-    fileprivate var browser = Browser()
-    fileprivate let webViewContainer = UIView(frame: .zero)
     fileprivate let browserToolbar = BrowserToolbar()
     fileprivate var homeView: HomeView?
     fileprivate let overlayView = OverlayView()
@@ -30,7 +28,6 @@ class BrowserViewController: UIViewController {
     fileprivate var scrollBarOffsetAlpha: CGFloat = 0
     fileprivate var scrollBarState: URLBarScrollState = .expanded
 
-    fileprivate let photoManager = PhotoManager()
     fileprivate let urlCacheManager = URLCacheManeger()
 
     fileprivate enum URLBarScrollState {
@@ -40,7 +37,9 @@ class BrowserViewController: UIViewController {
         case animating
     }
 
+    private let webViewContainer = UIView()
     private var homeViewContainer = UIView()
+
 
     fileprivate var showsToolsetInURLBar = false {
         didSet {
@@ -63,7 +62,6 @@ class BrowserViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        photoManager.delegate = self
         webViewController.delegate = self
 
         let background = GradientBackgroundView(alpha: 0.7, startPoint: CGPoint.zero, endPoint: CGPoint(x: 1, y: 1))
@@ -224,7 +222,9 @@ class BrowserViewController: UIViewController {
         }
 
         // Reset the views. These changes won't be immediately visible since they'll be under the screenshot.
-        browser.reset()
+
+        // WKTODO: Reset
+        // browser.reset()
         webViewContainer.isHidden = true
         browserToolbar.isHidden = true
         urlBar.removeFromSuperview()
@@ -315,28 +315,50 @@ class BrowserViewController: UIViewController {
         })
     }
 
-    fileprivate func presentImageActionSheet(title: String, link: String?, saveAction: @escaping () -> Void, copyAction: @escaping () -> Void) {
-        let alertController = UIAlertController(title: title.truncated(limit: 160, position: .middle), message: nil, preferredStyle: .actionSheet)
+    private func snapToolbars(scrollView: UIScrollView) {
+        guard scrollBarState == .transitioning else { return }
 
-        if let link = link {
-            alertController.addAction(UIAlertAction(title: UIConstants.strings.copyLink, style: .default) { _ in
-                UIPasteboard.general.string = link
-            })
-
-            alertController.addAction(UIAlertAction(title: UIConstants.strings.shareLink, style: .default) { _ in
-                let activityViewController = UIActivityViewController(activityItems: [link], applicationActivities: nil)
-                self.present(activityViewController, animated: true, completion: nil)
-            })
+        if scrollBarOffsetAlpha < 0.05 || scrollView.contentOffset.y < UIConstants.layout.urlBarHeight {
+            showToolbars()
+        } else {
+            hideToolbars()
         }
+    }
 
-        alertController.addAction(UIAlertAction(title: UIConstants.strings.saveImage, style: .default) { _ in saveAction() })
-        alertController.addAction(UIAlertAction(title: UIConstants.strings.copyImage, style: .default) { _ in copyAction() })
-        alertController.addAction(UIAlertAction(title: UIConstants.strings.cancel, style: .cancel))
+    private func showToolbars() {
+        // WKTODO: ScrollView
+        // guard let scrollView = browser.scrollView else { return }
 
-        alertController.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection.init(rawValue: 0)
-        alertController.popoverPresentationController?.sourceView = self.view
-        alertController.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.size.width / 2.0, y: self.view.bounds.size.height / 2.0, width: 1.0, height: 1.0)
-        present(alertController, animated: true, completion: nil)
+        scrollBarState = .animating
+        UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
+            self.urlBar.collapseUrlBar(expandAlpha: 1, collapseAlpha: 0)
+            self.urlBarTopConstraint.update(offset: 0)
+            self.toolbarBottomConstraint.update(inset: 0)
+            // WKTODO: scrollView
+            // scrollView.bounds.origin.y += self.scrollBarOffsetAlpha * UIConstants.layout.urlBarHeight
+            self.scrollBarOffsetAlpha = 0
+            self.view.layoutIfNeeded()
+        }, completion: { _ in
+            self.scrollBarState = .expanded
+        })
+    }
+
+    private func hideToolbars() {
+        // WKTODO: scrollView
+        // guard let scrollView = browser.scrollView else { return }
+
+        scrollBarState = .animating
+        UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
+            self.urlBar.collapseUrlBar(expandAlpha: 0, collapseAlpha: 1)
+            self.urlBarTopConstraint.update(offset: -UIConstants.layout.urlBarHeight + UIConstants.layout.collapsedUrlBarHeight)
+            self.toolbarBottomConstraint.update(offset: UIConstants.layout.browserToolbarHeight)
+            // WKTODO: scrollView
+            // scrollView.bounds.origin.y += (self.scrollBarOffsetAlpha - 1) * UIConstants.layout.urlBarHeight
+            self.scrollBarOffsetAlpha = 1
+            self.view.layoutIfNeeded()
+        }, completion: { _ in
+            self.scrollBarState = .collapsed
+        })
     }
 }
 
@@ -349,7 +371,8 @@ extension BrowserViewController: URLBarDelegate {
         let text = text.trimmingCharacters(in: .whitespaces)
 
         guard !text.isEmpty else {
-            urlBar.url = browser.url
+            // WKTODO: url
+            // urlBar.url = browser.url
             return
         }
 
@@ -369,7 +392,8 @@ extension BrowserViewController: URLBarDelegate {
 
     func urlBarDidDismiss(_ urlBar: URLBar) {
         overlayView.dismiss()
-        urlBarContainer.isBright = !browser.isLoading
+        // WKTODO: isLoading
+        // urlBarContainer.isBright = !browser.isLoading
     }
 
     func urlBarDidPressDelete(_ urlBar: URLBar) {
@@ -401,227 +425,36 @@ extension BrowserViewController: URLBarDelegate {
 extension BrowserViewController: BrowserToolsetDelegate {
     func browserToolsetDidPressBack(_ browserToolset: BrowserToolset) {
         urlBar.dismiss()
-        browser.goBack()
+        // // WKTODO: actions
+        // browser.goBack()
     }
 
     func browserToolsetDidPressForward(_ browserToolset: BrowserToolset) {
         urlBar.dismiss()
-        browser.goForward()
+        // WKTODO: actions
+        // browser.goForward()
     }
 
     func browserToolsetDidPressReload(_ browserToolset: BrowserToolset) {
         urlBar.dismiss()
-        browser.reload()
+        // WKTODO: actions
+        // browser.reload()
     }
 
     func browserToolsetDidPressStop(_ browserToolset: BrowserToolset) {
         urlBar.dismiss()
-        browser.stop()
+        // WKTODO: actions
+        // browser.stop()
     }
 
     func browserToolsetDidPressSend(_ browserToolset: BrowserToolset) {
-        guard let url = browser.url else { return }
+        // WKTODO: url
+        // guard let url = browser.url else { return }
         present(OpenUtils.buildShareViewController(url: url, anchor: browserToolset.sendButton), animated: true, completion: nil)
     }
 
     func browserToolsetDidPressSettings(_ browserToolbar: BrowserToolset) {
         showSettings()
-    }
-}
-
-extension BrowserViewController: BrowserDelegate {
-    func browser(_ browser: Browser, didLongPressImage path: String?, link: String?) {
-        guard let path = path else { return }
-
-        let downloadImage: (String) -> UIImage? = { path in
-            guard let url = URL(string: path),
-                let data = (try? Data(contentsOf: url)),
-                let image = UIImage(data: data) else { return nil }
-
-            return image
-        }
-
-        let fetchImage: (String) -> UIImage? = { path in
-            let image = self.urlCacheManager.fetchImageFromCache(path: path) ?? downloadImage(path)
-            return image
-        }
-
-        let saveAction = {
-            guard let image = fetchImage(path) else { return }
-            self.photoManager.save(image: image)
-        }
-
-        let copyAction = {
-            Telemetry.default.recordEvent(category: TelemetryEventCategory.action, method: TelemetryEventMethod.click, object: TelemetryEventObject.copyImage)
-
-            UIPasteboard.general.image = fetchImage(path)
-        }
-
-        presentImageActionSheet(title: path, link: link, saveAction: saveAction, copyAction: copyAction)
-    }
-
-    func browserDidStartNavigation(_ browser: Browser) {
-        urlBar.isLoading = true
-        browserToolbar.isLoading = true
-        urlBarContainer.isBright = false
-        showToolbars()
-    }
-
-    func browserDidFinishNavigation(_ browser: Browser) {
-        urlBar.url = browser.url
-        urlBar.isLoading = false
-        browserToolbar.isLoading = false
-        urlBarContainer.isBright = !urlBar.isEditing
-        urlBar.progressBar.hideProgressBar()
-    }
-
-    func browser(_ browser: Browser, didFailNavigationWithError error: Error) {
-        urlBar.url = browser.url
-        urlBar.isLoading = false
-        browserToolbar.isLoading = false
-        urlBarContainer.isBright = true
-    }
-
-    func browser(_ browser: Browser, didUpdateCanGoBack canGoBack: Bool) {
-        urlBar.canGoBack = canGoBack
-        browserToolbar.canGoBack = canGoBack
-    }
-
-    func browser(_ browser: Browser, didUpdateCanGoForward canGoForward: Bool) {
-        urlBar.canGoForward = canGoForward
-        browserToolbar.canGoForward = canGoForward
-    }
-
-    func browser(_ browser: Browser, didUpdateEstimatedProgress estimatedProgress: Float) {
-        // Don't update progress if the home view is visible. This prevents the centered URL bar
-        // from catching the global progress events.
-        guard homeView == nil else { return }
-
-        if estimatedProgress == 0 {
-            urlBar.progressBar.animateHidden(false, duration: UIConstants.layout.progressVisibilityAnimationDuration)
-            urlBar.progressBar.animateGradient()
-            return
-        }
-
-        urlBar.progressBar.setProgress(estimatedProgress, animated: true)
-    }
-
-    func browser(_ browser: Browser, didUpdateURL url: URL?) {
-        urlBar.url = url
-    }
-
-    func browser(_ browser: Browser, shouldStartLoadWith request: URLRequest) -> Bool {
-        return requestHandler.handle(request: request) { alert in
-            present(alert, animated: true, completion: nil)
-        }
-    }
-
-    func browser(_ browser: Browser, scrollViewDidScroll scrollView: UIScrollView) {
-        let translation = scrollView.panGestureRecognizer.translation(in: scrollView)
-        let isDragging = scrollView.panGestureRecognizer.state != .possible
-
-        // This will be 0 if we're moving but not dragging (i.e., gliding after dragging).
-        let dragDelta = translation.y - lastScrollTranslation.y
-
-        // This will match dragDelta unless the URL bar is transitioning.
-        let offsetDelta = scrollView.contentOffset.y - lastScrollOffset.y
-
-        lastScrollOffset = scrollView.contentOffset
-        lastScrollTranslation = translation
-
-        guard scrollBarState != .animating, !scrollView.isZooming else { return }
-
-        guard scrollView.contentOffset.y + scrollView.frame.height < scrollView.contentSize.height && (scrollView.contentOffset.y > 0 || scrollBarOffsetAlpha > 0) else {
-            // We're overscrolling, so don't do anything.
-            return
-        }
-
-        if !isDragging && offsetDelta < 0 {
-            // We're gliding up after dragging, so fully show the toolbars.
-            showToolbars()
-            return
-        }
-
-        let pageExtendsBeyondScrollView = scrollView.frame.height + UIConstants.layout.browserToolbarHeight + UIConstants.layout.urlBarHeight < scrollView.contentSize.height
-        let toolbarsHiddenAtTopOfPage = scrollView.contentOffset.y <= 0 && scrollBarOffsetAlpha > 0
-
-        guard isDragging, (dragDelta < 0 && pageExtendsBeyondScrollView) || toolbarsHiddenAtTopOfPage || scrollBarState == .transitioning else { return }
-
-        let lastOffsetAlpha = scrollBarOffsetAlpha
-        scrollBarOffsetAlpha = (0 ... 1).clamp(scrollBarOffsetAlpha - dragDelta / UIConstants.layout.urlBarHeight)
-        switch scrollBarOffsetAlpha {
-        case 0:
-            scrollBarState = .expanded
-        case 1:
-            scrollBarState = .collapsed
-        default:
-            scrollBarState = .transitioning
-        }
-        self.urlBar.collapseUrlBar(expandAlpha: max(0, (1 - scrollBarOffsetAlpha * 2)), collapseAlpha: max(0, -(1 - scrollBarOffsetAlpha * 2)))
-        self.urlBarTopConstraint.update(offset: -scrollBarOffsetAlpha * (UIConstants.layout.urlBarHeight - UIConstants.layout.collapsedUrlBarHeight))
-        self.toolbarBottomConstraint.update(offset: scrollBarOffsetAlpha * UIConstants.layout.browserToolbarHeight)
-        scrollView.bounds.origin.y += (lastOffsetAlpha - scrollBarOffsetAlpha) * UIConstants.layout.urlBarHeight
-        lastScrollOffset = scrollView.contentOffset
-    }
-
-    private func showToolbars() {
-        guard let scrollView = browser.scrollView else { return }
-
-        scrollBarState = .animating
-        UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
-            self.urlBar.collapseUrlBar(expandAlpha: 1, collapseAlpha: 0)
-            self.urlBarTopConstraint.update(offset: 0)
-            self.toolbarBottomConstraint.update(inset: 0)
-            scrollView.bounds.origin.y += self.scrollBarOffsetAlpha * UIConstants.layout.urlBarHeight
-            self.scrollBarOffsetAlpha = 0
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
-            self.scrollBarState = .expanded
-        })
-    }
-
-    private func hideToolbars() {
-        guard let scrollView = browser.scrollView else { return }
-
-        scrollBarState = .animating
-        UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
-            self.urlBar.collapseUrlBar(expandAlpha: 0, collapseAlpha: 1)
-            self.urlBarTopConstraint.update(offset: -UIConstants.layout.urlBarHeight + UIConstants.layout.collapsedUrlBarHeight)
-            self.toolbarBottomConstraint.update(offset: UIConstants.layout.browserToolbarHeight)
-            scrollView.bounds.origin.y += (self.scrollBarOffsetAlpha - 1) * UIConstants.layout.urlBarHeight
-            self.scrollBarOffsetAlpha = 1
-            self.view.layoutIfNeeded()
-        }, completion: { _ in
-            self.scrollBarState = .collapsed
-        })
-    }
-
-    func browser(_ browser: Browser, scrollViewWillBeginDragging scrollView: UIScrollView) {
-        lastScrollOffset = scrollView.contentOffset
-        lastScrollTranslation = scrollView.panGestureRecognizer.translation(in: scrollView)
-    }
-
-    func browser(_ browser: Browser, scrollViewDidEndDragging scrollView: UIScrollView) {
-        snapToolbars(scrollView: scrollView)
-    }
-
-    func browserShouldScrollToTop(_ browser: Browser) -> Bool {
-        guard scrollBarOffsetAlpha == 0 else {
-            showToolbars()
-            return false
-        }
-
-        return true
-    }
-
-    private func snapToolbars(scrollView: UIScrollView) {
-        guard scrollBarState == .transitioning else { return }
-
-        if scrollBarOffsetAlpha < 0.05 || scrollView.contentOffset.y < UIConstants.layout.urlBarHeight {
-            showToolbars()
-        } else {
-            hideToolbars()
-        }
     }
 }
 
@@ -691,6 +524,8 @@ extension BrowserViewController: WebControllerDelegate {
 
         return true
     }
+
+    func webController(_ controller: WebController, stateDidChange state: BrowserState) {}
 }
 
 extension BrowserViewController: HomeViewDelegate {
@@ -720,7 +555,8 @@ extension BrowserViewController: OverlayViewDelegate {
     func overlayView(_ overlayView: OverlayView, didSubmitText text: String) {
         let text = text.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty else {
-            urlBar.url = browser.url
+            // WKTODO: url
+            // urlBar.url = browser.url
             return
         }
 
@@ -736,24 +572,6 @@ extension BrowserViewController: OverlayViewDelegate {
             urlBar.url = overlayURL
         }
         urlBar.dismiss()
-    }
-}
-
-extension BrowserViewController: PhotoManagerDelegate {
-    func photoManager(_ photoManager: PhotoManager, didFinishSavingWithError error: Error?) {
-        let didSucceed = error == nil
-
-        Telemetry.default.recordEvent(category: TelemetryEventCategory.action, method: TelemetryEventMethod.click, object: TelemetryEventObject.saveImage, value: nil, extras: ["didSucceed": didSucceed])
-
-        guard !didSucceed else { return }
-
-        let accessDenied = UIAlertController(title: String(format: UIConstants.strings.photosPermissionTitle, AppInfo.productName), message: UIConstants.strings.photosPermissionDescription, preferredStyle: UIAlertControllerStyle.alert)
-        accessDenied.addAction(UIAlertAction(title: UIConstants.strings.cancel, style: UIAlertActionStyle.default, handler: nil))
-        accessDenied.addAction(UIAlertAction(title: UIConstants.strings.openSettingsButtonTitle, style: UIAlertActionStyle.default ) { (action: UIAlertAction!) -> Void in
-            UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
-        })
-
-        self.present(accessDenied, animated: true, completion: nil)
     }
 }
 
