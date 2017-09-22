@@ -8,8 +8,15 @@ class URLBarContainer: UIView {
     private let backgroundDark = GradientBackgroundView()
     private let backgroundBright = GradientBackgroundView(alpha: 0.8)
 
-    init() {
-        super.init(frame: CGRect.zero)
+    var isBright: Bool = false {
+        didSet {
+            backgroundDark.animateHidden(isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
+            backgroundBright.animateHidden(!isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
+        }
+    }
+
+    convenience init() {
+        self.init(frame: .zero)
 
         backgroundColor = .black
 
@@ -26,16 +33,5 @@ class URLBarContainer: UIView {
         backgroundBright.snp.makeConstraints { make in
             make.edges.equalTo(self)
         }
-    }
-
-    var isBright: Bool = false {
-        didSet {
-            backgroundDark.animateHidden(isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
-            backgroundBright.animateHidden(!isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
-        }
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }

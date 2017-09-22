@@ -7,18 +7,18 @@ import AutocompleteTextField
 import SnapKit
 import Telemetry
 
-protocol URLBarDelegate: class {
-    func urlBar(_ urlBar: URLBar, didEnterText text: String)
-    func urlBar(_ urlBar: URLBar, didSubmitText text: String)
-    func urlBarDidActivate(_ urlBar: URLBar)
-    func urlBarDidDeactivate(_ urlBar: URLBar)
-    func urlBarDidFocus(_ urlBar: URLBar)
-    func urlBarDidDismiss(_ urlBar: URLBar)
-    func urlBarDidPressDelete(_ urlBar: URLBar)
+protocol URLBarViewDelegate: class {
+    func urlBar(_ urlBar: URLBarView, didEnterText text: String)
+    func urlBar(_ urlBar: URLBarView, didSubmitText text: String)
+    func urlBarDidActivate(_ urlBar: URLBarView)
+    func urlBarDidDeactivate(_ urlBar: URLBarView)
+    func urlBarDidFocus(_ urlBar: URLBarView)
+    func urlBarDidDismiss(_ urlBar: URLBarView)
+    func urlBarDidPressDelete(_ urlBar: URLBarView)
 }
 
-class URLBar: UIView {
-    weak var delegate: URLBarDelegate?
+class URLBarView: UIView {
+    weak var delegate: URLBarViewDelegate?
 
     let progressBar = GradientProgressBar(progressViewStyle: .bar)
     var inBrowsingMode: Bool = false
@@ -564,7 +564,7 @@ class URLBar: UIView {
     }
 }
 
-extension URLBar: AutocompleteTextFieldDelegate {
+extension URLBarView: AutocompleteTextFieldDelegate {
     func autocompleteTextFieldShouldBeginEditing(_ autocompleteTextField: AutocompleteTextField) -> Bool {
 
         autocompleteTextField.highlightAll()
@@ -594,38 +594,5 @@ extension URLBar: AutocompleteTextFieldDelegate {
         }
 
         delegate?.urlBar(self, didEnterText: text)
-    }
-}
-
-private class URLTextField: AutocompleteTextField {
-    override var placeholder: String? {
-        didSet {
-            attributedPlaceholder = NSAttributedString(string: placeholder ?? "", attributes: [NSAttributedStringKey.foregroundColor: UIConstants.colors.urlTextPlaceholder])
-        }
-    }
-
-    override func textRect(forBounds bounds: CGRect) -> CGRect {
-        return getInsetRect(forBounds: bounds)
-    }
-
-    override func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return getInsetRect(forBounds: bounds)
-    }
-
-    private func getInsetRect(forBounds bounds: CGRect) -> CGRect {
-        // Add internal padding.
-        let inset = bounds.insetBy(dx: UIConstants.layout.urlBarWidthInset, dy: UIConstants.layout.urlBarHeightInset)
-
-        // Add a right margin so we don't overlap with the clear button.
-        var clearButtonWidth: CGFloat = 0
-        if let clearButton = rightView, isEditing {
-            clearButtonWidth = clearButton.bounds.width + CGFloat(5)
-        }
-
-        return CGRect(x: inset.origin.x, y: inset.origin.y, width: inset.width - clearButtonWidth, height: inset.height)
-    }
-
-    override fileprivate func rightViewRect(forBounds bounds: CGRect) -> CGRect {
-        return super.rightViewRect(forBounds: bounds).offsetBy(dx: -UIConstants.layout.urlBarWidthInset, dy: 0)
     }
 }

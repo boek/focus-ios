@@ -31,6 +31,8 @@
 		746D78FB1F4E0095002EB522 /* ShareSheetActivities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FA1F4E0095002EB522 /* ShareSheetActivities.swift */; };
 		A57245250F88CCA4993E55B2 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4C4943B406FCA9B74B4E186 /* CoreText.framework */; };
 		A89766DA1F57DCA9008183C5 /* (null) in Resources */ = {isa = PBXBuildFile; };
+		B32EB0441F74835800C56FB8 /* URLBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32EB0431F74835800C56FB8 /* URLBarController.swift */; };
+		B32EB0471F748F3000C56FB8 /* URLTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32EB0461F748F3000C56FB8 /* URLTextField.swift */; };
 		B36DB6E21F4CE75600E8604C /* ContextMenu.js in Resources */ = {isa = PBXBuildFile; fileRef = B36DB6E11F4CE75600E8604C /* ContextMenu.js */; };
 		B37F83041F3B90CE00F242EB /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37F83021F3B90CE00F242EB /* CacheManager.swift */; };
 		B37F83051F3B90CE00F242EB /* PhotoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37F83031F3B90CE00F242EB /* PhotoManager.swift */; };
@@ -276,6 +278,8 @@
 		A89766D61F57DCA9008183C5 /* es-AR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-AR"; path = "es-AR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		A89766D71F57DCA9008183C5 /* es-AR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "es-AR"; path = "es-AR.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		AAB8E622E994545108473554 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		B32EB0431F74835800C56FB8 /* URLBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLBarController.swift; sourceTree = "<group>"; };
+		B32EB0461F748F3000C56FB8 /* URLTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLTextField.swift; sourceTree = "<group>"; };
 		B36DB6E11F4CE75600E8604C /* ContextMenu.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = ContextMenu.js; path = Assets/ContextMenu.js; sourceTree = "<group>"; };
 		B37F83021F3B90CE00F242EB /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
 		B37F83031F3B90CE00F242EB /* PhotoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoManager.swift; sourceTree = "<group>"; };
@@ -702,6 +706,25 @@
 			path = OpenInFocus;
 			sourceTree = "<group>";
 		};
+		B32EB0421F74834400C56FB8 /* URLBar */ = {
+			isa = PBXGroup;
+			children = (
+				B32EB0451F74836A00C56FB8 /* views */,
+				B32EB0431F74835800C56FB8 /* URLBarController.swift */,
+			);
+			path = URLBar;
+			sourceTree = "<group>";
+		};
+		B32EB0451F74836A00C56FB8 /* views */ = {
+			isa = PBXGroup;
+			children = (
+				D3E2C9601DA2F7C600DEBE3D /* URLBar.swift */,
+				D3426B021DBAE3800016DA5A /* URLBarContainer.swift */,
+				B32EB0461F748F3000C56FB8 /* URLTextField.swift */,
+			);
+			path = views;
+			sourceTree = "<group>";
+		};
 		B36DB6E01F4CE74500E8604C /* Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -766,6 +789,7 @@
 		D5DA8ECD1F71927E0040DDC4 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				B32EB0421F74834400C56FB8 /* URLBar */,
 				D5DA8ECE1F71928A0040DDC4 /* WebView */,
 			);
 			path = Modules;
@@ -915,8 +939,6 @@
 				D3E54FDD1DF0E0D6003E1AFF /* UIImageExtensions.swift */,
 				D32F71D21BCEF67C006D44FC /* UIViewExtensions.swift */,
 				D3E2C96A1DA3069000DEBE3D /* URIFixup.swift */,
-				D3E2C9601DA2F7C600DEBE3D /* URLBar.swift */,
-				D3426B021DBAE3800016DA5A /* URLBarContainer.swift */,
 				E40AFB0F1DC9014700DA5651 /* UserAgent.swift */,
 				D37DE55C1BCDBD6100906364 /* WaveView.swift */,
 				F805722E1DBEE504004339C1 /* WebCacheUtils.swift */,
@@ -1316,9 +1338,11 @@
 				D3E2C9611DA2F7C600DEBE3D /* URLBar.swift in Sources */,
 				B37F83041F3B90CE00F242EB /* CacheManager.swift in Sources */,
 				E40AFB141DC939FF00DA5651 /* SupportUtils.swift in Sources */,
+				B32EB0471F748F3000C56FB8 /* URLTextField.swift in Sources */,
 				D392887F1BC5E47E0016A9A0 /* UIConstants.swift in Sources */,
 				D3E251F91DAF064B005918DC /* Utils.swift in Sources */,
 				D32F71D31BCEF67C006D44FC /* UIViewExtensions.swift in Sources */,
+				B32EB0441F74835800C56FB8 /* URLBarController.swift in Sources */,
 				D3E2C96B1DA3069000DEBE3D /* URIFixup.swift in Sources */,
 				D3BFCB511BD1559300AD22D1 /* AboutContentViewController.swift in Sources */,
 				D3DA77851DC2C307009C114E /* ErrorPage.swift in Sources */,

@@ -9,13 +9,12 @@ import Telemetry
 
 class BrowserViewController: UIViewController {
     private let webViewController = WebViewController()
+    private let urlBarController = URLBarController()
 
     fileprivate let browserToolbar = BrowserToolbar()
     fileprivate var homeView: HomeView?
     fileprivate let overlayView = OverlayView()
-    fileprivate let searchEngineManager = SearchEngineManager(prefs: UserDefaults.standard)
-    fileprivate let urlBarContainer = URLBarContainer()
-    fileprivate var urlBar: URLBar!
+    fileprivate let searchEngineManager = SearchEngineManager(prefs: .standard)
     fileprivate var topURLBarConstraints = [Constraint]()
     fileprivate let requestHandler = RequestHandler()
 
@@ -37,6 +36,7 @@ class BrowserViewController: UIViewController {
         case animating
     }
 
+    private let urlBarContainer = UIView()
     private let webViewContainer = UIView()
     private var homeViewContainer = UIView()
 
@@ -73,7 +73,6 @@ class BrowserViewController: UIViewController {
         webViewContainer.backgroundColor = .yellow
         view.addSubview(webViewContainer)
 
-        urlBarContainer.alpha = 0
         view.addSubview(urlBarContainer)
 
         browserToolbar.isHidden = true
@@ -130,8 +129,8 @@ class BrowserViewController: UIViewController {
         showsToolsetInURLBar = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.orientation.isLandscape
 
         containWebView()
+        containUrlBar()
         createHomeView()
-        createURLBar()
 
         guard shouldEnsureBrowsingMode else { return }
         ensureBrowsingMode()
@@ -149,9 +148,10 @@ class BrowserViewController: UIViewController {
         // Prevent the keyboard from showing up until after the user has viewed the Intro.
         let userHasSeenIntro = UserDefaults.standard.integer(forKey: AppDelegate.prefIntroDone) == AppDelegate.prefIntroVersion
 
-        if userHasSeenIntro && !urlBar.inBrowsingMode {
-            urlBar.becomeFirstResponder()
-        }
+        // WKTODO: Focus URLBar
+        // if userHasSeenIntro && !urlBar.inBrowsingMode {
+        //     urlBar.becomeFirstResponder()
+        // }
 
         super.viewWillAppear(animated)
     }
@@ -163,6 +163,16 @@ class BrowserViewController: UIViewController {
 
         webViewController.view.snp.makeConstraints { make in
             make.edges.equalTo(webViewContainer.snp.edges)
+        }
+    }
+
+    private func containUrlBar() {
+        addChildViewController(urlBarController)
+        urlBarContainer.addSubview(urlBarController.view)
+        urlBarController.didMove(toParentViewController: self)
+
+        urlBarController.view.snp.makeConstraints { make in
+            make.edges.equalTo(urlBarContainer.snp.edges)
         }
     }
 
@@ -181,36 +191,6 @@ class BrowserViewController: UIViewController {
         self.homeView = homeView
     }
 
-    private func createURLBar() {
-        guard let homeView = homeView else {
-            assertionFailure("Home view must exist to create the URL bar")
-            return
-        }
-
-        urlBar = URLBar()
-        urlBar.delegate = self
-        urlBar.toolsetDelegate = self
-        urlBar.shrinkFromView = urlBarContainer
-        urlBar.showToolset = showsToolsetInURLBar
-        view.insertSubview(urlBar, aboveSubview: urlBarContainer)
-
-        urlBar.snp.makeConstraints { make in
-            urlBarTopConstraint = make.top.equalTo(topLayoutGuide.snp.bottom).constraint
-            topURLBarConstraints = [
-                urlBarTopConstraint,
-                make.leading.trailing.bottom.equalTo(urlBarContainer).constraint
-            ]
-
-            // Initial centered constraints, which will effectively be deactivated when
-            // the top constraints are active because of their reduced priorities.
-            make.leading.equalTo(view).priority(500)
-            make.top.equalTo(homeView).priority(500)
-
-            // Note: this padding here is in addition to the 8px that’s already applied for the Cancel action
-            make.trailing.equalTo(homeView.settingsButton.snp.leading).offset(-8).priority(500)
-        }
-        topURLBarConstraints.forEach { $0.deactivate() }
-    }
 
     fileprivate func resetBrowser() {
         // Screenshot the browser, showing the screenshot on top.
@@ -227,10 +207,10 @@ class BrowserViewController: UIViewController {
         // browser.reset()
         webViewContainer.isHidden = true
         browserToolbar.isHidden = true
-        urlBar.removeFromSuperview()
+        // urlBar.removeFromSuperview()
         urlBarContainer.alpha = 0
         createHomeView()
-        createURLBar()
+        // createURLBar()
 
         // Clear the cache and cookies, starting a new session.
         WebCacheUtils.reset()
@@ -253,7 +233,8 @@ class BrowserViewController: UIViewController {
                 screenshotView.alpha = 0
                 self.view.layoutIfNeeded()
             }, completion: { _ in
-                self.urlBar.becomeFirstResponder()
+                // WKTDO: URLBar
+                // self.urlBar.becomeFirstResponder()
                 Toast(text: UIConstants.strings.eraseMessage).show()
                 screenshotView.removeFromSuperview()
             })
@@ -263,7 +244,8 @@ class BrowserViewController: UIViewController {
     }
 
     fileprivate func showSettings() {
-        urlBar.shouldPresent = false
+        // WKTDO: URLBar
+        // urlBar.shouldPresent = false
         let settingsViewController = SettingsViewController(searchEngineManager: searchEngineManager)
         navigationController!.pushViewController(settingsViewController, animated: true)
         navigationController!.setNavigationBarHidden(false, animated: true)
@@ -272,11 +254,12 @@ class BrowserViewController: UIViewController {
     }
 
     func ensureBrowsingMode() {
-        guard urlBar != nil else { shouldEnsureBrowsingMode = true; return }
-        guard !urlBar.inBrowsingMode else { return }
+        // WKTDO: URLBar
+        // guard urlBar != nil else { shouldEnsureBrowsingMode = true; return }
+        // guard !urlBar.inBrowsingMode else { return }
 
         urlBarContainer.alpha = 1
-        urlBar.ensureBrowsingMode()
+        // urlBar.ensureBrowsingMode()
 
         topURLBarConstraints.forEach { $0.activate() }
         shouldEnsureBrowsingMode = false
@@ -290,7 +273,8 @@ class BrowserViewController: UIViewController {
             webViewContainer.isHidden = false
             homeView?.removeFromSuperview()
             homeView = nil
-            urlBar.inBrowsingMode = true
+            // WKTDO: URLBar
+            // urlBar.inBrowsingMode = true
 
             if !showsToolsetInURLBar {
                 browserToolbar.animateHidden(false, duration: UIConstants.layout.toolbarFadeAnimationDuration)
@@ -310,7 +294,8 @@ class BrowserViewController: UIViewController {
         showsToolsetInURLBar = size.width > size.height
 
         coordinator.animate(alongsideTransition: { _ in
-            self.urlBar.showToolset = self.showsToolsetInURLBar
+            // WKTDO: URLBar
+            // self.urlBar.showToolset = self.showsToolsetInURLBar
             self.browserToolbar.animateHidden(self.homeView != nil || self.showsToolsetInURLBar, duration: coordinator.transitionDuration)
         })
     }
@@ -331,7 +316,8 @@ class BrowserViewController: UIViewController {
 
         scrollBarState = .animating
         UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
-            self.urlBar.collapseUrlBar(expandAlpha: 1, collapseAlpha: 0)
+            // WKTDO: URLBar
+            // self.urlBar.collapseUrlBar(expandAlpha: 1, collapseAlpha: 0)
             self.urlBarTopConstraint.update(offset: 0)
             self.toolbarBottomConstraint.update(inset: 0)
             // WKTODO: scrollView
@@ -349,7 +335,8 @@ class BrowserViewController: UIViewController {
 
         scrollBarState = .animating
         UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration, delay: 0, options: .allowUserInteraction, animations: {
-            self.urlBar.collapseUrlBar(expandAlpha: 0, collapseAlpha: 1)
+            // WKTDO: URLBar
+            // self.urlBar.collapseUrlBar(expandAlpha: 0, collapseAlpha: 1)
             self.urlBarTopConstraint.update(offset: -UIConstants.layout.urlBarHeight + UIConstants.layout.collapsedUrlBarHeight)
             self.toolbarBottomConstraint.update(offset: UIConstants.layout.browserToolbarHeight)
             // WKTODO: scrollView
@@ -362,12 +349,12 @@ class BrowserViewController: UIViewController {
     }
 }
 
-extension BrowserViewController: URLBarDelegate {
-    func urlBar(_ urlBar: URLBar, didEnterText text: String) {
+extension BrowserViewController: URLBarViewDelegate {
+    func urlBar(_ urlBar: URLBarView, didEnterText text: String) {
         overlayView.setSearchQuery(query: text, animated: true)
     }
 
-    func urlBar(_ urlBar: URLBar, didSubmitText text: String) {
+    func urlBar(_ urlBar: URLBarView, didSubmitText text: String) {
         let text = text.trimmingCharacters(in: .whitespaces)
 
         guard !text.isEmpty else {
@@ -390,22 +377,23 @@ extension BrowserViewController: URLBarDelegate {
         urlBar.dismiss()
     }
 
-    func urlBarDidDismiss(_ urlBar: URLBar) {
+    func urlBarDidDismiss(_ urlBar: URLBarView) {
         overlayView.dismiss()
         // WKTODO: isLoading
         // urlBarContainer.isBright = !browser.isLoading
     }
 
-    func urlBarDidPressDelete(_ urlBar: URLBar) {
+    func urlBarDidPressDelete(_ urlBar: URLBarView) {
         self.resetBrowser()
     }
 
-    func urlBarDidFocus(_ urlBar: URLBar) {
+    func urlBarDidFocus(_ urlBar: URLBarView) {
         overlayView.present()
-        urlBarContainer.isBright = false
+        // WKTODO: change urlbar color
+        // urlBarContainer.isBright = false
     }
 
-    func urlBarDidActivate(_ urlBar: URLBar) {
+    func urlBarDidActivate(_ urlBar: URLBarView) {
         UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration) {
             self.topURLBarConstraints.forEach { $0.activate() }
             self.urlBarContainer.alpha = 1
@@ -413,7 +401,7 @@ extension BrowserViewController: URLBarDelegate {
         }
     }
 
-    func urlBarDidDeactivate(_ urlBar: URLBar) {
+    func urlBarDidDeactivate(_ urlBar: URLBarView) {
         UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration) {
             self.topURLBarConstraints.forEach { $0.deactivate() }
             self.urlBarContainer.alpha = 0
@@ -424,25 +412,29 @@ extension BrowserViewController: URLBarDelegate {
 
 extension BrowserViewController: BrowserToolsetDelegate {
     func browserToolsetDidPressBack(_ browserToolset: BrowserToolset) {
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
         // // WKTODO: actions
         // browser.goBack()
     }
 
     func browserToolsetDidPressForward(_ browserToolset: BrowserToolset) {
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
         // WKTODO: actions
         // browser.goForward()
     }
 
     func browserToolsetDidPressReload(_ browserToolset: BrowserToolset) {
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
         // WKTODO: actions
         // browser.reload()
     }
 
     func browserToolsetDidPressStop(_ browserToolset: BrowserToolset) {
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
         // WKTODO: actions
         // browser.stop()
     }
@@ -450,7 +442,7 @@ extension BrowserViewController: BrowserToolsetDelegate {
     func browserToolsetDidPressSend(_ browserToolset: BrowserToolset) {
         // WKTODO: url
         // guard let url = browser.url else { return }
-        present(OpenUtils.buildShareViewController(url: url, anchor: browserToolset.sendButton), animated: true, completion: nil)
+        // present(OpenUtils.buildShareViewController(url: url, anchor: browserToolset.sendButton), animated: true, completion: nil)
     }
 
     func browserToolsetDidPressSettings(_ browserToolbar: BrowserToolset) {
@@ -509,7 +501,9 @@ extension BrowserViewController: WebControllerDelegate {
         default:
             scrollBarState = .transitioning
         }
-        self.urlBar.collapseUrlBar(expandAlpha: max(0, (1 - scrollBarOffsetAlpha * 2)), collapseAlpha: max(0, -(1 - scrollBarOffsetAlpha * 2)))
+
+        // WKTDO: URLBar
+        // self.urlBar.collapseUrlBar(expandAlpha: max(0, (1 - scrollBarOffsetAlpha * 2)), collapseAlpha: max(0, -(1 - scrollBarOffsetAlpha * 2)))
         self.urlBarTopConstraint.update(offset: -scrollBarOffsetAlpha * (UIConstants.layout.urlBarHeight - UIConstants.layout.collapsedUrlBarHeight))
         self.toolbarBottomConstraint.update(offset: scrollBarOffsetAlpha * UIConstants.layout.browserToolbarHeight)
         scrollView.bounds.origin.y += (lastOffsetAlpha - scrollBarOffsetAlpha) * UIConstants.layout.urlBarHeight
@@ -540,17 +534,20 @@ extension BrowserViewController: OverlayViewDelegate {
     }
 
     func overlayViewDidTouchEmptyArea(_ overlayView: OverlayView) {
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
     }
 
     func overlayView(_ overlayView: OverlayView, didSearchForQuery query: String) {
         if let url = searchEngineManager.activeEngine.urlForQuery(query) {
             Telemetry.default.recordEvent(category: TelemetryEventCategory.action, method: TelemetryEventMethod.selectQuery, object: TelemetryEventObject.searchBar)
             submit(url: url)
-            urlBar.url = url
+            // WKTDO: URLBar
+            // urlBar.url = url
         }
 
-        urlBar.dismiss()
+        // WKTDO: URLBar
+        // urlBar.dismiss()
     }
     func overlayView(_ overlayView: OverlayView, didSubmitText text: String) {
         let text = text.trimmingCharacters(in: .whitespaces)
@@ -569,9 +566,12 @@ extension BrowserViewController: OverlayViewDelegate {
         }
         if let overlayURL = url {
             submit(url: overlayURL)
-            urlBar.url = overlayURL
+            // WKTDO: URLBar
+            // urlBar.url = overlayURL
         }
-        urlBar.dismiss()
+        
+        // WKTDO: URLBar
+        // urlBar.dismiss()
     }
 }
 
