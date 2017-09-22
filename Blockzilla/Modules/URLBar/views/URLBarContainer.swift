@@ -5,10 +5,26 @@
 import Foundation
 
 class URLBarContainer: UIView {
+    enum State {
+        case hidden, dark, bright
+    }
+
+    var state: State = .hidden {
+        didSet {
+            switch state {
+            case .hidden:
+                backgroundDark.animateHidden(true, duration: 0)
+                backgroundBright.animateHidden(true, duration: 0)
+            case .dark: isBright = false
+            case .bright: isBright = true
+            }
+        }
+    }
+
     private let backgroundDark = GradientBackgroundView()
     private let backgroundBright = GradientBackgroundView(alpha: 0.8)
 
-    var isBright: Bool = false {
+    private var isBright: Bool = false {
         didSet {
             backgroundDark.animateHidden(isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
             backgroundBright.animateHidden(!isBright, duration: UIConstants.layout.urlBarTransitionAnimationDuration)
@@ -18,8 +34,8 @@ class URLBarContainer: UIView {
     convenience init() {
         self.init(frame: .zero)
 
-        backgroundColor = .black
-
+        backgroundDark.isHidden = true
+        backgroundDark.alpha = 0
         addSubview(backgroundDark)
 
         backgroundBright.isHidden = true
