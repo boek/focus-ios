@@ -15,11 +15,11 @@ class BrowserViewController: UIViewController {
     fileprivate let homeView = HomeView()
     fileprivate let overlayView = OverlayView()
     fileprivate let searchEngineManager = SearchEngineManager(prefs: .standard)
-//    fileprivate var topURLBarConstraints: Constraint?
     fileprivate let requestHandler = RequestHandler()
 
     fileprivate var toolbarBottomConstraint: Constraint!
     fileprivate var urlBarConstraint: Constraint!
+    fileprivate var overlayConstraint: Constraint!
     fileprivate var homeViewBottomConstraint: Constraint!
     fileprivate var browserBottomConstraint: Constraint!
     fileprivate var lastScrollOffset = CGPoint.zero
@@ -39,6 +39,8 @@ class BrowserViewController: UIViewController {
     private let urlBarContainer = UIView()
     private let webViewContainer = UIView()
     private var homeViewContainer = UIView()
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle { return .lightContent }
 
 
     fileprivate var showsToolsetInURLBar = false {
@@ -132,9 +134,14 @@ class BrowserViewController: UIViewController {
         }
 
         overlayView.snp.makeConstraints { make in
-            make.top.equalTo(urlBarContainer.snp.bottom)
+            make.top.equalTo(homeView.snp.bottom).dividedBy(2).priority(500)
+            
+            print(urlBarContainer.snp.bottom)
+            overlayConstraint = make.top.equalTo(urlBarContainer.snp.bottom).constraint
             make.leading.trailing.bottom.equalTo(view)
         }
+        
+        overlayConstraint.deactivate()
 
         showsToolsetInURLBar = UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.orientation.isLandscape
 
@@ -147,9 +154,7 @@ class BrowserViewController: UIViewController {
         submit(url: url)
     }
 
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
-    }
+    
 
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.setNavigationBarHidden(true, animated: animated)
@@ -573,11 +578,22 @@ extension BrowserViewController: URLBarDelegate {
     func urlBar(_ URLBar: URLBar, stateDidChange state: URLBarState) {
         print(state)
         switch state {
-        case .passive: urlBarConstraint.deactivate()
-        case .active: urlBarConstraint.activate()
+        case .passive:
+            urlBarConstraint.deactivate()
+            overlayConstraint.deactivate()
+            overlayView.dismiss()
+        case .active:
+            urlBarConstraint.activate()
+            overlayConstraint.activate()
+            overlayView.present()
+        case .typing(let text):
+            overlayView.setSearchQuery(query: text, animated: true)
         default: break
         }
-        self.view.layoutIfNeeded()
+    
+        UIView.animate(withDuration: UIConstants.layout.urlBarTransitionAnimationDuration) {
+            self.view.layoutIfNeeded()
+        }
     }
 }
 

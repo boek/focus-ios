@@ -11,6 +11,7 @@ import UIKit
 enum URLBarState {
     case passive
     case active
+    case typing(String)
     case loading(URL, Int)
     case browsing(URL)
 }
@@ -64,7 +65,7 @@ class URLBarController: UIViewController, URLBar {
 
 extension URLBarController: URLBarViewDelegate {
     func urlBar(_ urlBar: URLBarView, didEnterText text: String) {
-
+        state = .typing(text)
     }
 
     func urlBar(_ urlBar: URLBarView, didSubmitText text: String) {
