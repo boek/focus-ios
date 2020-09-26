@@ -1,0 +1,70 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "AutocompleteTextField",
+        "repositoryURL": "https://github.com/boek/AutocompleteTextField",
+        "state": {
+          "branch": "swift-package-manager",
+          "revision": "e7dcff311b1f75e358a0d35a0129fe30b125ba8f",
+          "version": null
+        }
+      },
+      {
+        "package": "Fuzi",
+        "repositoryURL": "https://github.com/cezheng/Fuzi",
+        "state": {
+          "branch": null,
+          "revision": "5955a7d9b3bb5f24adb1a46ce8586ba37eee43bc",
+          "version": "3.1.2"
+        }
+      },
+      {
+        "package": "GCDWebServers",
+        "repositoryURL": "https://github.com/obitow/GCDWebServer",
+        "state": {
+          "branch": "master",
+          "revision": "02ca3a0b5044cf0ca47211f2c914473e44cb208a",
+          "version": null
+        }
+      },
+      {
+        "package": "OnePasswordExtension",
+        "repositoryURL": "https://github.com/boek/generic-password-app-extension.git",
+        "state": {
+          "branch": "swift-package-manager",
+          "revision": "e8b7a8f073f68deabe30f0fa499012e3b21b0aed",
+          "version": null
+        }
+      },
+      {
+        "package": "Sentry",
+        "repositoryURL": "https://github.com/getsentry/sentry-cocoa",
+        "state": {
+          "branch": null,
+          "revision": "fb4b4be84ae61f9e306348a65600c9dd93977e6f",
+          "version": "4.5.0"
+        }
+      },
+      {
+        "package": "SnapKit",
+        "repositoryURL": "https://github.com/SnapKit/SnapKit",
+        "state": {
+          "branch": null,
+          "revision": "d458564516e5676af9c70b4f4b2a9178294f1bc6",
+          "version": "5.0.1"
+        }
+      },
+      {
+        "package": "Telemetry",
+        "repositoryURL": "https://github.com/boek/telemetry-ios",
+        "state": {
+          "branch": "test-spm",
+          "revision": "db0c2637bac4e09421133b18f1127f221a2b921c",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

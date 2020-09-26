@@ -434,7 +434,7 @@ extension WebViewController: WKScriptMessageHandler {
 
 extension WebViewController {
     func createPasswordManagerExtensionItem() {
-        OnePasswordExtension.shared().createExtensionItem(forWebView: browserView, completion: {(extensionItem, error) -> Void in
+        OnePasswordExtension.shared().createExtensionItem(for: browserView, completion: {(extensionItem, error) -> Void in
             if extensionItem == nil {
                 return
             }
@@ -444,7 +444,7 @@ extension WebViewController {
     }
 
     func fillPasswords(returnedItems: [AnyObject]) {
-        OnePasswordExtension.shared().fillReturnedItems(returnedItems, intoWebView: browserView, completion: { (success, returnedItemsError) -> Void in
+        OnePasswordExtension.shared().fillReturnedItems(returnedItems, into: browserView, completion: { (success, returnedItemsError) -> Void in
             if !success {
                 return
             }
